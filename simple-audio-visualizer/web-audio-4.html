@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Web Audio 2</title>
+	<style>
+		canvas{border:1px solid black;display:block;}
+        *{font-family:sans-serif;}
+        span{margin-right:2em;}
+        #slider-distortion{position:relative;top:.7em;}
+	</style>
+</head>
+<body>
+<canvas width="640" height="480"></canvas>
+<p>
+    <span><label for="cb-highshelf">Highshelf Filter (Treble)</label><input type="checkbox" id="cb-highshelf"></span>
+    <span><label for="cb-lowshelf">Lowshelf Filter (Bass)</label><input type="checkbox" id="cb-lowshelf"></span>
+    <span><label for="cb-distortion">Distortion</label><input type="checkbox" id="cb-distortion"></span>
+    <span>0 <input type="range" min="0" max="100" value="0" id="slider-distortion"> 100</span>
+</p>
+
+<!-- use obama-oilspill.mp3 or human-voice.mp3 -->
+<audio controls src="sounds/obama-oilspill.mp3"></audio>
+
+<script>
+	const NUM_SAMPLES = 64;
+    let highshelf = false;
+    let lowshelf = false;
+    let distortion = false;
+    let distortionAmount = 20;
+
+	// 1 - get reference to <audio> element on page
+	let audioElement = document.querySelector('audio');
+			
+	// 2 - create a new `AudioContext` object
+	// https://developer.mozilla.org/en-US/docs/Web/API/AudioContext
+	let audioCtx = new (window.AudioContext || window.webkitAudioContext); // to support Safari and mobile
+	
+	// 3 - create a node that points at the <audio> element
+	// https://developer.mozilla.org/en-US/docs/Web/API/AudioContext/createMediaElementSource
+	let sourceNode = audioCtx.createMediaElementSource(audioElement); 
+	
+	// 4 - create a *analyser node*
+	// https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode
+	// this gets us real-time frequency and time-domain (i.e. waveform) information
+	let analyserNode = audioCtx.createAnalyser();
+	
+	// 5 - How many samples do we want? fft stands for Fast Fourier Transform
+	analyserNode.fftSize = NUM_SAMPLES;
+
+	// https://developer.mozilla.org/en-US/docs/Web/API/BiquadFilterNode
+    let biquadFilter = audioCtx.createBiquadFilter();
+    biquadFilter.type = "highshelf";
+    // biquadFilter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+    // biquadFilter.gain.setValueAtTime(25, audioCtx.currentTime);
+
+    //Lowshelf
+    let lowShelfBiquadFilter = audioCtx.createBiquadFilter();
+    lowShelfBiquadFilter.type = "lowshelf";
+
+    // Waveshaper
+    let distortionFilter = audioCtx.createWaveShaper();
+
+	// 6 - hook up the <audio> element to the analyserNode
+	sourceNode.connect(biquadFilter);
+    biquadFilter.connect(lowShelfBiquadFilter);
+    lowShelfBiquadFilter.connect(distortionFilter);
+    distortionFilter.connect(analyserNode);
+	
+	// 7 - connect to the destination i.e. the speakers
+	analyserNode.connect(audioCtx.destination);
+	
+	// 8 - create a new array of 8-bit integers (0-255)
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array
+    let data = new Uint8Array(analyserNode.frequencyBinCount); // OR analyserNode.fftSize/2
+	
+	// Chrome autoplay fix
+	// https://developers.google.com/web/updates/2017/09/autoplay-policy-changes
+	document.querySelector("audio").onplay = (e) => {
+        if (audioCtx.state == "suspended") {
+                audioCtx.resume();
+        }
+	};
+	
+	// canvas stuff
+	let ctx = document.querySelector("canvas").getContext("2d");
+	const BAR_WIDTH = 10;
+	const MAX_BAR_HEIGHT = 400;
+	const PADDING = 4;
+	const MIDDLE_Y = ctx.canvas.height/2;
+	
+    setupUI();
+	loop();
+	
+	function loop()
+    { 
+        // 9 - this schedules a call to the loop() method in 1/60 second
+        requestAnimationFrame(loop);
+            
+        // 10 - populate the array with the frequency data
+        // notice these arrays are passed *by reference*
+        analyserNode.getByteFrequencyData(data);
+        //analyserNode.getByteTimeDomainData(data);
+            
+        // 11 - this time, let's visualize the audio data on the canvas
+            
+            /* YOU WRITE THIS! */
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+        // Bars
+        // ctx.save();
+        //     ctx.fillStyle = "red";
+        //     ctx.translate(0, MIDDLE_Y);
+            
+        //     for(let b of data)
+        //     {
+        //         let percent = b / 255;
+
+        //         ctx.translate(BAR_WIDTH, 0);
+        //         ctx.save();
+        //             ctx.scale(1, -1);
+        //             ctx.fillRect(0, 0, BAR_WIDTH, MAX_BAR_HEIGHT * percent);
+        //         ctx.restore();
+        //         ctx.fillRect(0, 0, BAR_WIDTH, MAX_BAR_HEIGHT * percent);
+        //         ctx.translate(PADDING, 0);
+        //     }
+        // ctx.restore();
+
+        // Circle
+        ctx.save();
+            ctx.fillStyle = "red";
+            ctx.translate(300, MIDDLE_Y - 100);
+            
+            for(let b of data)
+            {
+                let percent = b / 255;
+                if(percent < 0.02) percent = 0.02;
+
+                ctx.translate(BAR_WIDTH, 0);
+                ctx.rotate(Math.PI * 2 / 32);
+
+                ctx.save();
+                    ctx.fillStyle = `rgb(${b * 2}, ${b - 128}, ${255 - b})`;
+                    ctx.scale(1, -1);
+                    ctx.fillRect(0, 0, BAR_WIDTH, MAX_BAR_HEIGHT * percent);
+                ctx.restore();
+
+                ctx.translate(PADDING, 0);
+            }
+        ctx.restore();
+
+        // Line
+        ctx.save();
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 3;
+        let x = 0;
+        let y = MIDDLE_Y + 200;
+        ctx.beginPath();
+        ctx. moveTo(x, y);
+        for(let b of data)
+        {
+            ctx.lineTo(x, y - b);
+            x += ctx.canvas.width / data.length + 8;
+        }
+        ctx.stroke();
+        ctx.closePath();
+        ctx.restore();
+
+        const lowLoudness = data.slice(0, 8).reduce((prev, next)=> next + prev) / 8;
+        const highLoudness = data.slice(23).reduce((prev, next)=> next + prev) / 8;
+        // console.log(lowLoudness + ' ' + highLoudness);
+
+        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+        const dataArray = imageData.data;
+        const length = dataArray.length;
+
+        for(let i = 0; i < length; i+=4)
+        {
+            // Yellow color filter
+            // dataArray[i] += 50;
+            // dataArray[i + 1] += 50;
+
+            if(Math.random() < highLoudness / 255)
+            {
+                dataArray[i] = dataArray[i + 1] = dataArray[i + 2] = highLoudness;
+                dataArray[i] += highLoudness / 10;
+                dataArray[i + 1] += highLoudness / 10;
+            }
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+	}
+
+    function setupUI()
+    {
+        // I. set the initial state of the high shelf checkbox
+        document.querySelector('#cb-highshelf').checked = highshelf; // `highshelf` is a boolean we will declare in a second
+        document.querySelector('#cb-lowshelf').checked = lowshelf;
+        document.querySelector('#cb-distortion').value = distortion;
+        document.querySelector('#slider-distortion').value = distortionAmount;
+        
+        // II. change the value of `highshelf` every time the high shelf checkbox changes state
+        document.querySelector('#cb-highshelf').onchange = e => {
+            highshelf = e.target.checked;
+            toggleHighshelf(); // turn on or turn off the filter, depending on the value of `highshelf`!
+        };
+
+        // III. change the value of `lowshelf` every time the high shelf checkbox changes state
+        document.querySelector('#cb-lowshelf').onchange = e => {
+            lowshelf = e.target.checked;
+            toggleLowshelf(); // turn on or turn off the filter, depending on the value of `highshelf`!
+        };
+
+        document.querySelector('#cb-distortion').onchange = e => {
+            distortion = e.target.checked;
+            toggleDistortion();
+        };
+
+        document.querySelector('#slider-distortion').onchange = e => {
+            distortionAmount = Number(e.target.value);
+            toggleDistortion();
+        };
+        
+        // IV. 
+        toggleHighshelf(); // when the app starts up, turn on or turn off the filter, depending on the value of `highshelf`!
+        toggleLowshelf();
+    }
+
+    function toggleHighshelf()
+    {
+        if(highshelf)
+        {
+            biquadFilter.frequency.setValueAtTime(1000, audioCtx.currentTime); // we created the `biquadFilter` (i.e. "treble") node last time
+            biquadFilter.gain.setValueAtTime(25, audioCtx.currentTime);
+        }
+        else
+        {
+            biquadFilter.gain.setValueAtTime(0, audioCtx.currentTime);
+        }
+    }
+
+    function toggleLowshelf()
+    {
+        if(lowshelf)
+        {
+            lowShelfBiquadFilter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+            lowShelfBiquadFilter.gain.setValueAtTime(15, audioCtx.currentTime);
+        }
+        else
+        {
+            lowShelfBiquadFilter.gain.setValueAtTime(0, audioCtx.currentTime);
+        }
+    }
+
+    function toggleDistortion()
+    {
+        if(distortion)
+        {
+            distortionFilter.curve = null; // being paranoid and trying to trigger garbage collection
+            distortionFilter.curve = makeDistortionCurve(distortionAmount);
+        }
+        else
+        {
+            distortionFilter.curve = null;
+        }
+    }
+
+    // from: https://developer.mozilla.org/en-US/docs/Web/API/WaveShaperNode
+    function makeDistortionCurve(amount = 20)
+    {
+        let n_samples = 256, curve = new Float32Array(n_samples);
+        for (let i =0 ; i < n_samples; ++i )
+        {
+            let x = i * 2 / n_samples - 1;
+            curve[i] = (Math.PI + amount) * x / (Math.PI + amount * Math.abs(x));
+            //curve[i] = x; // does not modify sound
+            //curve[i] = 0; // silence
+            //curve[i] = x * amount; // classic distortion
+            //curve[i] = (Math.PI + amount) * x / (Math.PI + amount * Math.abs(x));
+            //curve[i] =(Math.PI + 100 * x/2) / (Math.PI + 100 * Math.abs(x)); // nice distortion
+            //curve[i] = -(Math.PI + 100 * x/2) / (Math.PI + 50 * Math.abs(x));
+            //			
+            //curve[i] = Math.random() * 2 - 1;	// static!	
+            //curve[i] = x * 5 + Math.random() * 2 - 1; // adds a less intrusive static to the audio
+            //curve[i] = x * Math.sin(x) * amount/5; // sounds like a cross between Donald Duck and Cartman from South Park
+
+            //(3 + 20) * x * 57 * (Math.PI / 180) / (Math.PI + 20 * Math.abs(x)) // from the stack overflow post
+        }
+        return curve;
+    }
+</script>
+</body>
+</html>

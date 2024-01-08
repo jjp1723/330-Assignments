@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>GabDog</title>
+<style>
+*{
+    font-family: sans-serif;
+}
+</style>
+<script type="module">
+
+// TODO: ADD YOUR imports and Firebase setup code HERE
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js";
+import { getDatabase, ref, set, push, onValue, increment } from  "https://www.gstatic.com/firebasejs/9.10.0/firebase-database.js";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyD_OMJvaV99otcf_UR5tgC18SS6K_7hKFg",
+    authDomain: "high-scores-b7977.firebaseapp.com",
+    projectId: "high-scores-b7977",
+    storageBucket: "high-scores-b7977.appspot.com",
+    messagingSenderId: "568583043035",
+    appId: "1:568583043035:web:57f45e44379d6da76a99fe"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const favoritesList = document.querySelector("#favoritesList");
+    
+console.log(app); // make sure firebase is loaded
+//
+
+const writeFavNameData = name => {
+  const db = getDatabase();
+  const favRef = ref(db, 'favorites/' + name);
+  set(favRef, {
+      name,
+      likes: increment(1)
+  });
+};
+
+const favoritesChanged = (snapshot) => {
+  // TODO: clear #favoritesList
+  favoritesList.innerHTML = "";
+  snapshot.forEach(fav => {
+    const childKey = fav.key;
+    const childData = fav.val();
+    console.log(childKey,childData);
+    // TODO: update #favoritesList
+    favoritesList.innerHTML += `<li><b>${childData.name}</b> - Likes: ${childData.likes}</li>`;
+  });
+};
+
+const init = () => {
+  const db = getDatabase();
+  const favoritesRef = ref(db, 'favorites/');
+  onValue(favoritesRef,favoritesChanged);
+	
+  btnSubmit.onclick = () => {
+    writeFavNameData(nameField.value);
+  };
+};
+
+init();
+
+</script>
+</head>
+<body>
+  <h1>GabDog&trade;</h1>
+  <h3>We want to know - what's a good dog name?</h3>
+  <p>Name --> <input value="Rover" id="nameField"></p>
+  <button id="btnSubmit">Send Name to Server</button>
+  <hr>
+  <h3>Popular Names</h3>
+  <ol id="favoritesList"></ol>
+ </body>
+</html>

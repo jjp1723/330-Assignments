@@ -1,0 +1,213 @@
+body
+{
+    font-family: 'Silkscreen', cursive;
+	text-align: center;
+	background-color:lightgray;
+}
+
+#output
+{
+	background-color: aliceblue;
+    padding: 1rem;
+}
+
+#my-button, #my-5-button
+{
+    font-family: 'Silkscreen', cursive;
+    width: 200px;
+    height: 50pt;
+    font-size: 15pt;
+    background-color: darkgray;
+}
+
+#my-5-button
+{
+    display: none;
+}
+
+/* Android */
+@media only screen and (min-width:240px)
+{
+    .container
+    {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    html, body, .container
+    {
+        font-size: 1.2rem;
+        height: 100%;
+        margin: 0;
+    }
+
+    h1
+    {
+        font-size: 1rem;
+        background-color: slategray;
+        color:#F5F5F5;
+        padding: .6rem;
+        margin: 0;
+        text-align: center;
+    }
+} 
+
+/* iPhone */
+@media only screen and (min-width:320px)
+{
+    .container
+    {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    html, body, .container
+    {
+        height: 100%;
+        margin: 0;
+    }
+
+    h1
+    {
+        font-size: 1.2rem;
+        background-color: #174287;
+        color:#F5F5F5;
+        padding: .8rem;
+        margin: 0;
+        text-align: center;
+    }
+
+    #output
+    {
+        text-align: center;
+    }
+}
+
+/* iPad */
+@media only screen and (min-width:768px)
+{
+    h1
+    {
+        font-size: 3rem;
+        background-color: #23D160;
+    }
+
+    #my-button, #my-5-button
+    {
+        width: 300px;
+        height: 75pt;
+        font-size: 1.5rem;
+    }
+
+    body
+    {
+        color: darkgray;
+        font-size: 2rem;
+    }
+}
+
+/* iPad Pro */
+@media only screen and (min-width:1024px)
+{
+    body
+    {
+        font-size: 1rem;
+        text-align: left;
+
+        /* I added padding to make it look better */
+        padding: 1rem;
+    }
+
+    h1
+    {
+        background-color: #FF3860;
+    }
+
+    .container
+    {
+        display: block;
+        margin: 1rem;
+    }
+
+    #output
+    {
+        text-align: left;
+    }
+}
+
+/* Desktop */
+@media only screen and (min-width:1200px)
+{
+    body
+    {
+        font-size: 1rem;
+        text-align: left;
+    }
+
+    h1
+    {
+        background-color: goldenrod;
+        font-size: 2.5rem;
+    }
+
+    .container
+    {
+        display: block;
+        margin: 2rem;
+    }
+
+    #my-button, #my-5-button
+    {
+        width: 300px;
+        height: 60pt;
+        font-size: 1.2rem;
+    }
+
+    #output
+    {
+        text-align: left;
+    }
+}
+
+/* Bulma's Full-HD */
+@media only screen and (min-width:1408px)
+{
+    body
+    {
+        font-size: 1rem;
+        text-align: left;
+    }
+
+    h1
+    {
+        background-color: darkmagenta;
+        font-size: 2rem;
+    }
+
+    .container
+    {
+        display: block;
+        margin: 3rem;
+    }
+
+    #my-button, #my-5-button
+    {
+        width: 300px;
+        height: 50pt;
+        font-size: 1.1rem;
+    }
+
+    #my-5-button
+    {
+        display: inline;
+    }
+
+    #output
+    {
+        text-align: left;
+    }
+}

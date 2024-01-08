@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Practice Questions</title>
+
+    <script type="module">
+        // ----- Part D -----
+        const dogs = [{"name" : "Fluffy", "age" : 1}, {"name" : "Piddles", "age" : 10}];
+        let dogHTML = `<ul>${dogs.map(c=>`<li>Name: ${c.name}   Age: ${c.age}</li>`).join("")}</ul>`;
+        document.querySelector("body").innerHTML += dogHTML;
+
+
+
+        // ----- Part E -----
+
+        // Q1
+        let a = 100;
+        a = [];
+        console.log(a);
+
+        // Q2
+        const b = ["red", "green"];
+        //b = [];
+        console.log(b);
+
+        // Q3
+        const c = ["red", "green"];
+        const d = c[0];
+        console.log(d);
+
+        // Q4
+        const e = ["red", "green"];
+        e[0] = "purple";
+        console.log(e);
+
+        // Q5
+        const f = {"name" : "Fluffy", "age" : 1};
+        //f = {"name" : "Piddles", "age" : 10};
+        console.log(f);
+
+        // Q6
+        const g = {"name" : "Fluffy", "age" : 1};
+        g.name = "Rags";
+        console.log(g);
+
+
+
+
+
+        // |||||||||| Practice Quiz 2 ||||||||||
+
+        let ctx = document.querySelector('canvas').getContext('2d');
+
+        // Part A
+
+        // Q6
+        ctx.fillStyle = "red";
+        ctx.translate(100, 100);
+        ctx.rotate(Math.PI / 4);
+        ctx.fillRect(-10, -10, 20, 20);
+
+
+
+        // Part B
+
+        // Q7
+        let imageData = ctx.getImageData(0, 0, 200, 200);
+        console.log(imageData.data.length);
+    </script>
+</head>
+<body>
+    <canvas width="200" height="200"></canvas>
+</body>
+</html>

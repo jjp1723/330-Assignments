@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Firebase Admin</title>
+    </head>
+    <body>
+        <h1>High Scores</h1>
+        <ul id="scores-list"><li id="no-data">No data yet!</li></ul>
+
+        <script type="module">
+            /* #1 - The Firebase setup code goes here  - both imports, `firebaseConfig` and `app` */
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/9.10.0/firebase-app.js";
+            import { getDatabase, ref, set, push, onValue } from  "https://www.gstatic.com/firebasejs/9.10.0/firebase-database.js";
+
+            // Your web app's Firebase configuration
+            const firebaseConfig = {
+                apiKey: "AIzaSyD_OMJvaV99otcf_UR5tgC18SS6K_7hKFg",
+                authDomain: "high-scores-b7977.firebaseapp.com",
+                projectId: "high-scores-b7977",
+                storageBucket: "high-scores-b7977.appspot.com",
+                messagingSenderId: "568583043035",
+                appId: "1:568583043035:web:57f45e44379d6da76a99fe"
+            };
+            
+            // Initialize Firebase
+            const app = initializeApp(firebaseConfig);
+
+            console.log(app); // make sure firebase is loaded
+                
+                
+                
+            // #2 NEW STUFF
+            const db = getDatabase();
+            const scoresRef = ref(db, 'scores');
+
+            const scoresChanged = (snapshot) => {
+                document.querySelector("#scores-list").removeChild(document.querySelector("#no-data"));
+                snapshot.forEach(score => {
+                    const childKey = score.key;
+                    const childData = score.val();
+                    console.log(childKey,childData);
+
+                    let li = document.createElement('li');
+                    li.textContent = `${childData.userId} - ${childData.game} - ${childData.score}`;
+                    document.querySelector("#scores-list").appendChild(li);
+                });
+            }
+
+            onValue(scoresRef,scoresChanged);
+            
+        </script>
+    </body>
+</html>
